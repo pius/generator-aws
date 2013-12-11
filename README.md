@@ -1,7 +1,6 @@
 # generator-aws [![Build Status](https://secure.travis-ci.org/pius/generator-aws.png?branch=master)](https://travis-ci.org/pius/generator-aws)
 
-A generator for [Yeoman](http://yeoman.io) that provisions the entire backend infrastructure for your AWS powered HTML5 app.
-
+A [Yeoman](http://yeoman.io) generator that provisions an AWS-powered backend for your HTML5 app
 
 ## Getting Started
 
