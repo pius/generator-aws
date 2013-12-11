@@ -1,0 +1,67 @@
+<html>
+<head>
+  <title><%= _.capitalize(name) %></title>
+  <link rel="stylesheet" type="text/css" href="css/style.css" />
+</head>
+<body>
+  <div id="fb-root"></div>
+  <nav>
+    <a id="new-post-button" class="admin-button" href="#">+ Post</a>
+    <a id="login-button" href="#">Login</a>
+  </nav>
+  <div id="content">
+    <h1><%= _.capitalize(name) %></h1>
+
+    <!-- Article editor markup -->
+    <div id="article-editor">
+      <h2>Create a New Article</h2>
+      <p>
+        <input id="article-asset" type="file" />
+        <input id="article-date" type="hidden" value="" />
+        Title: <input id="article-title" type="text" size="100" />
+        <button id="cancel-publish-button">Cancel</button>
+        <button id="publish-button">Publish</button>
+      </p>
+      <div class="wmd-panel">
+          <div id="wmd-button-bar"></div>
+          <textarea class="wmd-input" id="wmd-input"></textarea>
+      </div>
+      <div id="wmd-preview" class="wmd-panel wmd-preview"></div>
+    </div>
+
+    <!-- Placeholder markup for articles -->
+    <div id="articles">Loading articles...</div>
+  </div>
+
+  <!-- HTML template for displaying an individual article -->
+  <script id="article-template" type="text/template">
+    <article id="{{slug}}">
+      <header>
+        <a href="#" class="admin-button delete-button">Delete</a>
+        <a href="#" class="admin-button edit-button">Edit</a>
+        <h2 class="title">{{title}}</h1>
+        <h3 class="publishDate">Published on {{publishDate}}</h2>
+      </header>
+      <section class="body">{{body}}</section>
+    </article>
+  </script>
+
+     <!--<script type="text/javascript" src="js/Markdown.Converter.js"></script>
+  <script type="text/javascript" src="js/Markdown.Sanitizer.js"></script>
+  <script type="text/javascript" src="js/Markdown.Editor.js"></script> -->
+
+  <!-- Markdown editor scripts -->
+  <script type="text/javascript" src="js/Markdown.Converter.js"></script>
+  <script type="text/javascript" src="js/Markdown.Sanitizer.js"></script>
+  <script type="text/javascript" src="js/Markdown.Editor.js"></script>
+
+
+
+  <!-- Load the SDK -->
+  <script type="text/javascript" src="https://sdk.amazonaws.com/js/aws-sdk-2.0.0-rc1.min.js"></script>
+
+  <!-- Load our application -->
+  <script type="text/javascript" src="appInfo.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
+</body>
+</html>
