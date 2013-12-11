@@ -1,0 +1,6 @@
+#!/bin/sh
+BUCKET=<%= (bucketName) %>
+
+aws s3 sync . s3://$BUCKET \
+  --exclude '*' --include '*.js' --include '*.html' --include '*.css' --include '*.png' \
+  --region <%= (region) %> --acl public-read

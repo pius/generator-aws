@@ -1,0 +1,201 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+ 
+    "Description" : "Creates the resources needed to run the reference AWS-JS application created by the Yeoman AWS generator. Includes a DynamoDB table, S3 bucket, and the IAM users needed to administer it and grant public read access. <pius@alum.mit.edu>",
+ 
+    "Parameters" : {
+      "ReadCapacityUnits" : {
+        "Description" : "Provisioned read throughput for each table",
+        "Type" : "Number",
+        "Default" : "1",
+        "MinValue": "1",
+        "MaxValue": "10000",
+        "ConstraintDescription" : "should be between 1 and 10000"
+      },
+      "WriteCapacityUnits" : {
+        "Description" : "Provisioned write throughput for each table",
+        "Type" : "Number",
+        "Default" : "1",
+        "MinValue": "1",
+        "MaxValue": "10000",
+        "ConstraintDescription" : "should be between 1 and 10000"
+      },
+      "FacebookUserID" : {
+        "Description" : "Numerical Facebook ID of the Administrator (discoverable by going to http://graph.facebook.com/<yourfacebookusername>)",
+        "Type" : "String"
+      },
+      "FacebookAppID" : {
+        "Description" : "App ID of the Facebook App you created to handle authentication, created at https://developers.facebook.com/apps/ (pro tip: set the Site URL to http://localhost:9000) ",
+        "Type" : "String"
+      }
+    },
+    "Resources" : {
+        "S3Bucket" : {
+          "Type" : "AWS::S3::Bucket",
+          "Properties": {
+            "WebsiteConfiguration" : {"IndexDocument" : "index.html", "ErrorDocument" : "error.html" }
+          }
+        },
+        "BucketPolicy" : {
+          "Type" : "AWS::S3::BucketPolicy",
+          "Properties" : {
+            "PolicyDocument": {
+              "Version"      : "2008-10-17",
+              "Id"           : "S3BucketPolicy",
+              "Statement"    : [{
+                "Sid"        : "WriteAccess",
+                "Action"     : ["s3:GetObject", "s3:GetObjectAcl", "s3:PutObject", "s3:PutObjectAcl", "s3:PutObjectVersionAcl"],
+                "Effect"     : "Allow",
+                "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "S3Bucket"} , "/*"]]},
+                "Principal"  : { "AWS": {"Fn::GetAtt" : ["AdminRole", "Arn"]} }
+              },
+              {
+                "Sid"        : "ReadAccess",
+                "Action"     : ["s3:GetObject"],
+                "Effect"     : "Allow",
+                "Resource"   : { "Fn::Join" : ["", ["arn:aws:s3:::", {"Ref" : "S3Bucket"} , "/*"]]},
+                "Principal"  : { "AWS": "*" }
+              }
+              ]
+            },
+            "Bucket" : {"Ref" : "S3Bucket"}
+          }
+        },
+
+        "postTable" : {
+             "Type" : "AWS::DynamoDB::Table",
+              "Properties" : {
+                  "KeySchema" : {
+                     "HashKeyElement": {
+                        "AttributeName" : "type",
+                        "AttributeType" : "S"
+                     },
+                      "RangeKeyElement": {
+                        "AttributeName" : "publishDate",
+                        "AttributeType" : "N"
+                     }
+                  },
+                  "ProvisionedThroughput" : {
+                     "ReadCapacityUnits" : {"Ref" : "ReadCapacityUnits"},
+                     "WriteCapacityUnits" : {"Ref" : "WriteCapacityUnits"}
+                 }                              
+              }
+        },
+        "AdminRole": {
+         "Type": "AWS::IAM::Role",
+         "Properties": {
+            "AssumeRolePolicyDocument": {
+              "Version":"2012-10-17",
+              "Id":"RoleForFacebook",
+              "Statement":[{
+                  "Principal":{"Federated":"graph.facebook.com"},
+                  "Effect":"Allow",
+                  "Action":"sts:AssumeRoleWithWebIdentity",
+                  "Condition": { 
+                    "StringEquals": {
+                      "graph.facebook.com:id": [
+                        {"Ref" : "FacebookUserID"}
+                      ],
+                      "graph.facebook.com:app_id": [
+                        {"Ref" : "FacebookAppID"}
+                      ]
+                    }
+                  }
+               }]
+            },
+            "Path": "/",
+            "Policies": [ {
+               "PolicyName": "root",
+               "PolicyDocument": {
+                "Statement":[
+                    {
+                      "Action":[
+                        "dynamodb:DeleteItem",
+                        "dynamodb:GetItem",
+                        "dynamodb:PutItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:UpdateItem"
+                      ],
+                      "Sid":"awsappautheduser",
+                      "Resource": { "Fn::Join" : ["", ["arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref": "postTable" }]]},
+                      "Effect":"Allow"
+                    }
+                  ]
+               }
+               } ]
+            }
+        },
+        "UnauthenticatedUser": {
+         "Type": "AWS::IAM::User",
+         "Properties": {
+            "Path": "/",
+            "Policies": [ {
+               "PolicyName": "root",
+               "PolicyDocument": {
+                "Statement":[
+                    {
+                      "Action":[
+                        "dynamodb:GetItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan"
+                      ],
+                      "Sid":"awsapppublicuser",
+                      "Resource": { "Fn::Join" : ["", ["arn:aws:dynamodb:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":table/", { "Ref": "postTable" }]]},
+                      "Effect":"Allow"
+                    }
+                  ]
+               }
+               } ]
+            }
+        },
+        "UnauthenticatedUserKey" : {
+         "Type" : "AWS::IAM::AccessKey",
+         "Properties" : {
+            "UserName" : { "Ref" : "UnauthenticatedUser" }
+          }
+        }
+   },
+ 
+  "Outputs" : {
+    "FacebookAppID" : {
+      "Value" : {"Ref" : "FacebookAppID"},
+      "Description" : "Facebook App ID"
+    },
+    "PostTableName" : {
+      "Value" : {"Ref" : "postTable"},
+      "Description" : "Name of the post table"
+    },
+    "AdminRoleARN" : {
+      "Value" : {"Fn::GetAtt" : ["AdminRole", "Arn"] },
+      "Description" : "ARN of the role used to administer the site (uses Facebook Login)"
+    },
+    "UnauthenticatedUserARN" : {
+      "Value" : {"Fn::GetAtt" : ["UnauthenticatedUser", "Arn"] },
+      "Description" : "ARN of the role used for unauthenticated users reading posts"
+    },
+    "BucketName" : {
+      "Value" : { "Ref" : "S3Bucket" },
+      "Description" : "Name of the S3 bucket"
+    },
+    "Region" : {
+      "Value" : { "Ref" : "AWS::Region" },
+      "Description" : "Region of all resources"
+    },
+    "AccessKeyForUnauthenticatedUser" : {
+      "Value" : { "Ref" : "UnauthenticatedUserKey" }
+    },
+    "SecretKeyForUnauthenticatedUser" : {
+      "Value" : {
+        "Fn::GetAtt" : [ "UnauthenticatedUserKey", "SecretAccessKey" ]
+      }
+    },
+    "S3Prefix" : {
+      "Value" : "/assets"
+    },
+    "providerId" : {
+      "Value" : "graph.facebook.com"
+    }
+  }
+}
+
