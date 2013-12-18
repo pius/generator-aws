@@ -1,6 +1,6 @@
 {
   "name": "generator-aws",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A Yeoman generator that provisions an AWS-powered backend for your HTML5 app",
   "keywords": [
     "yeoman-generator", "Amazon", "AWS", "provisioning", "HTML5", "AWS-JS", "CloudFormation", "DynamoDB", "S3", "SQS", "SNS"
