@@ -1,4 +1,13 @@
-A [Yeoman](http://yeoman.io) generator that provisions an AWS-powered backend for your HTML5 app
+A [Yeoman](http://yeoman.io) generator that provisions an [AWS-powered](http://aws.amazon.com/sdkforbrowser/) backend for your HTML5 app
+
+## Quickstart
+
+Assuming you've got Yeoman and [AWS-CLI](http://aws.amazon.com/cli/) installed: 
+
+1. npm install -g generator-aws 
+2. mkdir newapp && cd $_ && yo aws 
+
+From there, pick a template and respond to the prompts.
 
 ## Getting Started
 

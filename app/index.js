@@ -36,7 +36,7 @@ AwsGenerator.prototype.configureForStack = function configureForStack() {
   console.log(this.yeoman);
 
   var stacks = {
-    reference: "Blog with Facebook Authentication (Amazon's AWS SDK for Javascript Reference App presented at AWS 2013 re:Invent"
+    reference: "Blog with Facebook Authentication (presented at AWS 2013 re:Invent)"
   }
 
   var stackQuestion = [{
@@ -50,10 +50,8 @@ AwsGenerator.prototype.configureForStack = function configureForStack() {
   this.prompt(stackQuestion, function (props) {
     this.stackName = props.stackName;
     this.stackPrefix = this.sourceRoot() + "/../../" + this.stackName + "/templates/";
-    console.log("this.stackPrefix is " + this.stackPrefix);
     
     this.scoped_copy = function scoped_copy(old_path, new_path) {
-      console.log("copying from " + this.stackPrefix + old_path);
       this.copy(this.stackPrefix + old_path, new_path);
     }.bind(this);
 
@@ -124,12 +122,13 @@ AwsGenerator.prototype.provisionAWS = function provisionAWS() {
     var provisioningCommand = template(fodderForTemplate);
 
     var sh = require('execSync');
-
     var result = sh.exec(provisioningCommand);
+    
     this.AWSresponse = JSON.parse(result.stdout).StackId
 
     console.log('AWS has begun provisioning your resources with stack id:' + this.AWSresponse);
-    console.log("Feel free to grab a cup of coffee or something, this will probably take a minute ...");
+    console.log('');
+    console.log("This will probably take a minute ...");
     var ten_seconds = 10 * 1000;
 
     var CheckStackStatus = setInterval(function() {

@@ -21,11 +21,11 @@
         "ConstraintDescription" : "should be between 1 and 10000"
       },
       "FacebookUserID" : {
-        "Description" : "Numerical Facebook ID of the Administrator (discoverable by going to http://graph.facebook.com/<yourfacebookusername>)",
+        "Description" : "Numerical User Facebook ID",
         "Type" : "String"
       },
       "FacebookAppID" : {
-        "Description" : "App ID of the Facebook App you created to handle authentication, created at https://developers.facebook.com/apps/ (pro tip: set the Site URL to http://localhost:9000) ",
+        "Description" : "Facebook App ID (pro tip: set the Site URL to http://localhost:9000)",
         "Type" : "String"
       }
     },
